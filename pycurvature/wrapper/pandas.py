@@ -20,6 +20,6 @@ def predict_dataframe_wrapper(func: Callable[[Curvature, List[float]], List[floa
     @functools.wraps(func)
     def _wrap(self, dataframe: pd.core.frame.DataFrame, thresholds: List[float] = [0.0], predictCol: str = "labels") -> pd.core.frame.DataFrame:
         predictions = func(self, thresholds)
-        newframe = pd.Series(predictions).rename(predictCol)
-        return pd.concat([dataframe, newframe], axis=1, join_axes=[dataframe.index])
+        newframe = pd.Series(predictions, index=dataframe.index.tolist(), name=predictCol)
+        return pd.concat([dataframe, newframe], axis=1)
     return _wrap

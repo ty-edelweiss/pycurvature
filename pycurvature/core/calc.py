@@ -10,26 +10,26 @@ class CalcCurvature(object):
     def __init__(self, npo: int = 1):
         self.npo_ = npo
 
-    def theta(self, x: List[float], y: List[float], i_cen: int):
+    def theta(self, x: List[float], y: List[float], i_cen: int) -> float:
         v_x = np.array([x[0]-x[i_cen], y[0]-y[i_cen]])
         v_y = np.array([x[-1]-x[i_cen], y[-1]-y[i_cen]])
         norm_x = np.linalg.norm(v_x)
         norm_y = np.linalg.norm(v_y)
         inner_product = np.dot(v_x, v_y)
         if norm_x == 0 or norm_y == 0:
-            return np.nan
+            return float("nan")
         else:
             cos = inner_product / (norm_x*norm_y)
             if cos > 1.0000000000000001 or cos < -1.0000000000000001:
                 return 0.0
             else:
                 rad = np.arccos(cos)
-                return rad * 180.0 / np.pi
+                return float(rad * 180.0 / np.pi)
 
-    def sign(self, x: List[float], y: List[float], i_cen: int):
+    def sign(self, x: List[float], y: List[float], i_cen: int) -> float:
         return (x[0] - x[i_cen]) * (y[-1] - y[i_cen]) - (y[0] - y[i_cen]) * (x[-1] - x[i_cen])
 
-    def modeling(self, x: List[float], y: List[float]):
+    def modeling(self, x: List[float], y: List[float]) -> Tuple[float, float, float]:
         sumx = sum(x)
         sumy = sum(y)
         sumx2 = sum([x_i ** 2 for x_i in x])
@@ -56,7 +56,7 @@ class CalcCurvature(object):
             return (cxe, cye, float("inf"))
         return (cxe, cye, re)
 
-    def calc(self, coords: List[Tuple[float, float]], std: int = 3):
+    def calc(self, coords: List[Tuple[float, float]], std: int = 3) -> List[Tuple[float, Tuple[float, float, float]]]:
         curvs = []
         ndata = len(coords)
         for i in range(ndata):
@@ -65,17 +65,19 @@ class CalcCurvature(object):
             xs = [c[0] for c in coords[lind:hind]]
             ys = [c[1] for c in coords[lind:hind]]
             (cxe, cye, re) = self.modeling(xs, ys)
-            curv = { "model": None, "value": None }
+            curv = []
             if len(xs) >= std:
                 cind = int((len(xs)-1)/2.0)
-                if self.theta(xs, ys, cind) == 180.0:
-                    curv["value"] = 0.0
+                if re == float("inf"):
+                    curv.appned(float("nan"))
+                elif self.theta(xs, ys, cind) == 180.0:
+                    curv.append(0.0)
                 elif self.sign(xs, ys, cind) > 0:
-                    curv["value"] = 1.0/-re
+                    curv.append(1.0/-re)
                 else:
-                    curv["value"] = 1.0/re
+                    curv.append(1.0/re)
             else:
-                curv["value"] = float("nan")
-            curv["model"] = (cxe, cye, re)
-            curvs.append(curv)
+                curv.append(float("nan"))
+            curv.append((cxe, cye, re))
+            curvs.append(tuple(curv))
         return curvs

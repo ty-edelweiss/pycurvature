@@ -20,7 +20,7 @@ class Curvature(CalcCurvature):
 
     def fit(self, X: List[Tuple[float, float]]) -> CurvatureModel:
         features = super().calc(X)
-        coefficients = [feature["model"] for feature in features]
-        curvatures = [feature["value"] for feature in features]
+        curvatures = [feature[0] for feature in features]
+        coefficients = [feature[1] for feature in features]
         model = CurvatureModel(curvatures, coefficients)
         return model
